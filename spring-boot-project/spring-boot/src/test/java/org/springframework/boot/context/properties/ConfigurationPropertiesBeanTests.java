@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -234,24 +234,6 @@ class ConfigurationPropertiesBeanTests {
 	}
 
 	@Test
-	void forValueObjectWithDeprecatedConstructorBindingAnnotatedClassReturnsBean() {
-		ConfigurationPropertiesBean propertiesBean = ConfigurationPropertiesBean
-			.forValueObject(DeprecatedConstructorBindingOnConstructor.class, "valueObjectBean");
-		assertThat(propertiesBean.getName()).isEqualTo("valueObjectBean");
-		assertThat(propertiesBean.getInstance()).isNull();
-		assertThat(propertiesBean.getType()).isEqualTo(DeprecatedConstructorBindingOnConstructor.class);
-		assertThat(propertiesBean.asBindTarget().getBindMethod()).isEqualTo(BindMethod.VALUE_OBJECT);
-		assertThat(propertiesBean.getAnnotation()).isNotNull();
-		Bindable<?> target = propertiesBean.asBindTarget();
-		assertThat(target.getType())
-			.isEqualTo(ResolvableType.forClass(DeprecatedConstructorBindingOnConstructor.class));
-		assertThat(target.getValue()).isNull();
-		assertThat(BindConstructorProvider.DEFAULT.getBindConstructor(DeprecatedConstructorBindingOnConstructor.class,
-				false))
-			.isNotNull();
-	}
-
-	@Test
 	void forValueObjectWithRecordReturnsBean() {
 		Class<?> implicitConstructorBinding = new ByteBuddy(ClassFileVersion.JAVA_V16).makeRecord()
 			.name("org.springframework.boot.context.properties.ImplicitConstructorBinding")
@@ -381,12 +363,12 @@ class ConfigurationPropertiesBeanTests {
 	}
 
 	@Component("annotatedComponent")
-	@ConfigurationProperties(prefix = "prefix")
+	@ConfigurationProperties("prefix")
 	static class AnnotatedComponent {
 
 	}
 
-	@ConfigurationProperties(prefix = "prefix")
+	@ConfigurationProperties("prefix")
 	static class AnnotatedBean {
 
 	}
@@ -420,7 +402,7 @@ class ConfigurationPropertiesBeanTests {
 	static class NonAnnotatedBeanConfiguration {
 
 		@Bean
-		@ConfigurationProperties(prefix = "prefix")
+		@ConfigurationProperties("prefix")
 		NonAnnotatedBean nonAnnotatedBean() {
 			return new NonAnnotatedBean();
 		}
@@ -452,7 +434,7 @@ class ConfigurationPropertiesBeanTests {
 	static class AnnotatedBeanConfiguration {
 
 		@Bean
-		@ConfigurationProperties(prefix = "factory")
+		@ConfigurationProperties("factory")
 		AnnotatedBean annotatedBean() {
 			return new AnnotatedBean();
 		}
@@ -554,20 +536,6 @@ class ConfigurationPropertiesBeanTests {
 
 		@ConstructorBinding
 		ConstructorBindingOnConstructor(String name, int age) {
-		}
-
-	}
-
-	@ConfigurationProperties
-	@SuppressWarnings("removal")
-	static class DeprecatedConstructorBindingOnConstructor {
-
-		DeprecatedConstructorBindingOnConstructor(String name) {
-			this(name, -1);
-		}
-
-		@org.springframework.boot.context.properties.ConstructorBinding
-		DeprecatedConstructorBindingOnConstructor(String name, int age) {
 		}
 
 	}

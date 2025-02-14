@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,8 +82,8 @@ class R2dbcAutoConfigurationTests {
 		this.contextRunner
 			.withPropertyValues("spring.r2dbc.url:r2dbc:h2:mem:///" + randomDatabaseName(),
 					"spring.r2dbc.pool.max-size=15", "spring.r2dbc.pool.max-acquire-time=3m",
-					"spring.r2dbc.pool.min-idle=1", "spring.r2dbc.pool.max-validation-time=1s",
-					"spring.r2dbc.pool.initial-size=0")
+					"spring.r2dbc.pool.acquire-retry=5", "spring.r2dbc.pool.min-idle=1",
+					"spring.r2dbc.pool.max-validation-time=1s", "spring.r2dbc.pool.initial-size=0")
 			.run((context) -> {
 				assertThat(context).hasSingleBean(ConnectionFactory.class)
 					.hasSingleBean(ConnectionPool.class)
@@ -96,6 +96,10 @@ class R2dbcAutoConfigurationTests {
 					assertThat(poolMetrics.getMaxAllocatedSize()).isEqualTo(15);
 					assertThat(connectionPool).hasFieldOrPropertyWithValue("maxAcquireTime", Duration.ofMinutes(3));
 					assertThat(connectionPool).hasFieldOrPropertyWithValue("maxValidationTime", Duration.ofSeconds(1));
+					assertThat(connectionPool).extracting("create").satisfies((mono) -> {
+						assertThat(mono.getClass().getName()).endsWith("MonoRetry");
+						assertThat(mono).hasFieldOrPropertyWithValue("times", 5L);
+					});
 				}
 				finally {
 					connectionPool.close().block();
@@ -405,7 +409,7 @@ class R2dbcAutoConfigurationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	private static class CustomizerConfiguration {
+	private static final class CustomizerConfiguration {
 
 		@Bean
 		ConnectionFactoryOptionsBuilderCustomizer customizer() {
