@@ -1621,7 +1621,7 @@ bom {
 			]
 		}
 	}
-	library("Neo4j Java Driver", "5.28.9") {
+	library("Neo4j Java Driver", "6.0.0") {
 		alignWith {
 			version {
 				from "org.springframework.data:spring-data-neo4j"
@@ -1630,7 +1630,8 @@ bom {
 		}
 		group("org.neo4j.driver") {
 			modules = [
-				"neo4j-java-driver"
+				"neo4j-java-driver",
+				"neo4j-java-driver-observation-micrometer"
 			]
 		}
 		links {
@@ -2380,7 +2381,7 @@ bom {
 			releaseNotes("https://github.com/spring-projects/spring-batch/releases/tag/v{version}")
 		}
 	}
-	library("Spring Data Bom", "2025.1.0-M6") {
+	library("Spring Data Bom", "2025.1.0-SNAPSHOT") {
 		considerSnapshots()
 		calendarName = "Spring Data Release"
 		group("org.springframework.data") {
